@@ -1,29 +1,47 @@
 def simplify_kmap(values):
     simplified_expression = []
 
-    # Проверка на полное покрытие
+    # Проверка на полное покрытие и полное отсутствие
     if all(v == 1 for v in values):
         return "1"
+    if all(v == 0 for v in values):
+        return "0"
 
-    # Проверка горизонтальных и вертикальных пар
-    if values[0] and values[1]:
-        simplified_expression.append("NOT A")
-    elif values[2] and values[3]:
-        simplified_expression.append("A")
+    # Функция для проверки пар и добавления упрощений
+    def check_pairs():
+        # Проверка горизонтальных и вертикальных пар
+        if values[0] == values[1] == 1:
+            simplified_expression.append("NOT A")
+        if values[2] == values[3] == 1:
+            simplified_expression.append("A")
+        if values[0] == values[2] == 1:
+            simplified_expression.append("NOT B")
+        if values[1] == values[3] == 1:
+            simplified_expression.append("B")
 
-    if values[0] and values[2]:
-        simplified_expression.append("NOT B")
-    elif values[1] and values[3]:
-        simplified_expression.append("B")
+    # Проверка диагональных пар для дополнительного упрощения
+    def check_diagonals():
+        if values[0] == values[3] == 1 and not (values[1] or values[2]):
+            simplified_expression.append("(A XOR B)")
+        if values[1] == values[2] == 1 and not (values[0] or values[3]):
+            simplified_expression.append("NOT (A XOR B)")
 
     # Проверка одиночных единиц
-    if values[0] and not any(values[1:]):
-        simplified_expression.append("NOT A AND NOT B")
-    if values[1] and not any([values[0], values[2], values[3]]):
-        simplified_expression.append("NOT A AND B")
-    if values[2] and not any([values[0], values[1], values[3]]):
-        simplified_expression.append("A AND NOT B")
-    if values[3] and not any(values[:3]):
-        simplified_expression.append("A AND B")
+    def check_singles():
+        if values.count(1) == 1:
+            index = values.index(1)
+            # Добавляем условия в зависимости от положения единицы
+            if index == 0:
+                simplified_expression.append("NOT A AND NOT B")
+            elif index == 1:
+                simplified_expression.append("NOT A AND B")
+            elif index == 2:
+                simplified_expression.append("A AND NOT B")
+            elif index == 3:
+                simplified_expression.append("A AND B")
+
+    check_pairs()
+    check_diagonals()
+    check_singles()
 
     return " OR ".join(simplified_expression) if simplified_expression else "0"
